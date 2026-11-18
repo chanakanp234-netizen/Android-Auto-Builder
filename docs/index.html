@@ -212,12 +212,49 @@ async function monitorRun(sha){
  throw new Error("Build is taking longer than 45 minutes. Open the GitHub Actions run for details.");
 }
 async function downloadApk(run){
+ const tag="android-apk-build-"+run.id;
+ let release=null;
+ // Prefer a public GitHub Release asset: this gives the browser a direct .apk URL
+ // and avoids cross-origin artifact ZIP download/CORS issues.
+ for(let i=0;i<20;i++){
+  try{
+   release=await api("/repos/"+OWNER+"/"+REPO+"/releases/tags/"+tag);
+   if((release.assets||[]).some(a=>a.name.toLowerCase().endsWith(".apk")))break;
+   release=null;
+  }catch{release=null}
+  await sleep(3000);
+ }
+ if(release){
+  const assets=(release.assets||[]).filter(a=>a.name.toLowerCase().endsWith(".apk"));
+  if(assets.length===1){
+   const a=assets[0],link=$("apkDownload");
+   link.href=a.browser_download_url;
+   link.removeAttribute("download");
+   link.textContent="↓ Download APK";
+   $("successResult").classList.add("show");
+   return 1;
+  }
+  if(assets.length>1){
+   const result=$("resultLinks");result.innerHTML="";
+   for(const asset of assets){
+    const a=document.createElement("a");
+    a.href=asset.browser_download_url;a.className="btn secondary";
+    a.textContent="↓ "+asset.name;result.appendChild(a);
+   }
+   return assets.length;
+  }
+ }
+ // Backward-compatible fallback for builds made before direct Release publishing.
  const d=await api("/repos/"+OWNER+"/"+REPO+"/actions/runs/"+run.id+"/artifacts");
  const artifact=(d.artifacts||[]).find(a=>a.name==="android-debug-apk"&&!a.expired);
- if(!artifact)throw new Error("Build succeeded but the APK artifact was not found. Open the Actions run.");
- $("progressLabel").textContent="Downloading APK";$("progressPercent").textContent="…";$("progressFill").className="indeterminate";$("buildStatus").textContent="Retrieving the APK from GitHub Actions…";
- const r=await fetch(API+"/repos/"+OWNER+"/"+REPO+"/actions/artifacts/"+artifact.id+"/zip",{headers:{Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}});
- if(!r.ok)throw new Error("GitHub could not provide the artifact directly (HTTP "+r.status+"). Use the View build logs link and download the artifact from GitHub.");
+ if(!artifact)throw new Error("Build succeeded but neither a direct APK release nor an APK artifact was found. Open the Actions run.");
+ $("progressLabel").textContent="Downloading APK";$("progressPercent").textContent="…";
+ $("progressFill").className="indeterminate";
+ $("buildStatus").textContent="Retrieving the APK from GitHub Actions…";
+ const r=await fetch(API+"/repos/"+OWNER+"/"+REPO+"/actions/artifacts/"+artifact.id+"/zip",{
+  headers:{Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}
+ });
+ if(!r.ok)throw new Error("GitHub could not provide the artifact ZIP (HTTP "+r.status+"). Use the View build logs link and download the artifact from GitHub.");
  const blob=await r.blob();
  if(!window.JSZip)throw new Error("The APK archive helper did not load. Download the artifact ZIP from GitHub and extract the APK.");
  const archive=await JSZip.loadAsync(blob);
@@ -232,7 +269,8 @@ async function downloadApk(run){
  const result=$("resultLinks");result.innerHTML="";
  for(const name of names){
   const apk=await archive.files[name].async("blob"),url=URL.createObjectURL(apk),a=document.createElement("a");
-  a.href=url;a.download=name.split("/").pop();a.className="btn secondary";a.textContent="↓ "+a.download;result.appendChild(a);
+  a.href=url;a.download=name.split("/").pop();a.className="btn secondary";a.textContent="↓ "+a.download;
+  result.appendChild(a);
  }
  return names.length;
 }
