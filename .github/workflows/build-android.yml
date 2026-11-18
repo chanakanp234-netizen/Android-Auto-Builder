@@ -89,19 +89,22 @@ jobs:
           destination = pathlib.Path(os.environ["RUNNER_TEMP"]) / "android-project"
           max_total = 2 * 1024 * 1024 * 1024
           total = 0
-          with zipfile.ZipFile(archive) as zf:
-              for info in zf.infolist():
-                  name = info.filename
-                  path = pathlib.PurePosixPath(name)
-                  if path.is_absolute() or ".." in path.parts:
-                      raise SystemExit(f"Unsafe ZIP entry path: {name}")
-                  mode = info.external_attr >> 16
-                  if stat.S_ISLNK(mode):
-                      raise SystemExit(f"Symlinks are not allowed in project ZIPs: {name}")
-                  total += info.file_size
-                  if total > max_total:
-                      raise SystemExit("ZIP expands beyond the 2 GiB safety limit.")
-              zf.extractall(destination)
+          try:
+              with zipfile.ZipFile(archive) as zf:
+                  for info in zf.infolist():
+                      name = info.filename
+                      path = pathlib.PurePosixPath(name)
+                      if path.is_absolute() or ".." in path.parts:
+                          raise SystemExit(f"Unsafe ZIP entry path: {name}")
+                      mode = info.external_attr >> 16
+                      if stat.S_ISLNK(mode):
+                          raise SystemExit(f"Symlinks are not allowed in project ZIPs: {name}")
+                      total += info.file_size
+                      if total > max_total:
+                          raise SystemExit("ZIP expands beyond the 2 GiB safety limit.")
+                  zf.extractall(destination)
+          except zipfile.BadZipFile:
+              raise SystemExit("Invalid ZIP archive: the uploaded file is not a real ZIP. It may be an HTML page renamed with a .zip extension. Export/download the actual project archive.")
           print(f"Extracted project to {destination}")
           PY
 
