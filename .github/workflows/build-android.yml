@@ -6,7 +6,6 @@ on:
     paths:
       - 'input/**/*.zip'
       - 'input/*.zip'
-      - '.github/workflows/build-android.yml'
   workflow_dispatch:
     inputs:
       project_zip_path:
@@ -70,12 +69,35 @@ jobs:
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Extract and validate Android project
+      - name: Safely extract and validate Android project
         shell: bash
+        env:
+          ZIP_PATH: ${{ steps.zip.outputs.path }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/android-project"
-          unzip -q "${{ steps.zip.outputs.path }}" -d "$RUNNER_TEMP/android-project"
+
+          python3 - <<'PY'
+          import os, pathlib, stat, zipfile
+          archive = os.environ["ZIP_PATH"]
+          destination = pathlib.Path(os.environ["RUNNER_TEMP"]) / "android-project"
+          max_total = 2 * 1024 * 1024 * 1024
+          total = 0
+          with zipfile.ZipFile(archive) as zf:
+              for info in zf.infolist():
+                  name = info.filename
+                  path = pathlib.PurePosixPath(name)
+                  if path.is_absolute() or ".." in path.parts:
+                      raise SystemExit(f"Unsafe ZIP entry path: {name}")
+                  mode = info.external_attr >> 16
+                  if stat.S_ISLNK(mode):
+                      raise SystemExit(f"Symlinks are not allowed in project ZIPs: {name}")
+                  total += info.file_size
+                  if total > max_total:
+                      raise SystemExit("ZIP expands beyond the 2 GiB safety limit.")
+              zf.extractall(destination)
+          print(f"Extracted project to {destination}")
+          PY
 
           WRAPPER="$(find "$RUNNER_TEMP/android-project" -type f -name gradlew -print -quit)"
           if [[ -z "$WRAPPER" ]]; then
@@ -88,8 +110,8 @@ jobs:
             echo "::error::settings.gradle or settings.gradle.kts is missing beside gradlew."
             exit 1
           fi
-          if [[ ! -d "$PROJECT_DIR/gradle/wrapper" ]]; then
-            echo "::error::Gradle wrapper directory is missing."
+          if [[ ! -f "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties" ]]; then
+            echo "::error::Gradle wrapper properties are missing."
             exit 1
           fi
 
@@ -99,8 +121,10 @@ jobs:
 
       - name: Build debug APK
         shell: bash
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          set -euo pipefail
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug --stacktrace
 
       - name: Collect APK files
         shell: bash
@@ -111,8 +135,8 @@ jobs:
 
           while IFS= read -r -d '' APK; do
             relative="${APK#"$PROJECT_DIR"/}"
-            destination="$RUNNER_TEMP/apk-output/${relative//\//-}"
-            cp "$APK" "$destination"
+            safe_name="$(printf '%s' "$relative" | tr '/' '-')"
+            cp "$APK" "$RUNNER_TEMP/apk-output/$safe_name"
             count=$((count + 1))
           done < <(find "$PROJECT_DIR" -type f -path '*/build/outputs/apk/debug/*.apk' -print0)
 
