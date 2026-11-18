@@ -6,219 +6,244 @@
 <meta name="theme-color" content="#0b1220">
 <title>Android Auto Builder</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--panel2:#152238;--line:#26364d;--muted:#8ea1bb;--text:#edf4ff;--accent:#68e0bd;--accent2:#75a7ff;--danger:#ff7b86;--warn:#f6c96b}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#1d3650 0,transparent 48%),var(--bg);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text)}
-.wrap{max-width:920px;margin:auto;padding:34px 20px 64px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:52px}.brand{display:flex;align-items:center;gap:12px;font-weight:750;letter-spacing:-.3px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#6de3be,#70a9ff);display:grid;place-items:center;color:#071321}.pill{border:1px solid #2c4058;color:#b9c9dc;border-radius:999px;padding:6px 11px;font-size:12px}
-.hero{text-align:center;margin-bottom:34px}.eyebrow{color:var(--accent);font-size:12px;font-weight:750;letter-spacing:1.7px;text-transform:uppercase}.hero h1{font-size:clamp(34px,6vw,54px);line-height:1.06;letter-spacing:-2px;margin:14px 0}.hero h1 span{background:linear-gradient(90deg,#7de6c4,#8db7ff);-webkit-background-clip:text;background-clip:text;color:transparent}.hero p{max-width:610px;margin:0 auto;color:var(--muted);font-size:16px}
-.card{background:linear-gradient(180deg,rgba(22,36,57,.96),rgba(15,26,43,.98));border:1px solid var(--line);border-radius:20px;padding:24px;margin:18px 0;box-shadow:0 16px 55px #0002}.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.card h2{margin:0;font-size:17px;letter-spacing:-.3px}.sub{color:var(--muted);font-size:13px;margin:5px 0 0}.step{display:flex;gap:12px;align-items:center}.num{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:#203750;color:var(--accent);font-weight:800;font-size:13px}
-label{display:block;font-size:13px;color:#bfcee0;font-weight:650;margin:12px 0 7px}input[type=password],input[type=text]{width:100%;border:1px solid #334963;background:#0b1525;color:var(--text);border-radius:11px;padding:13px 14px;font:inherit;outline:none}input:focus{border-color:#69dabc;box-shadow:0 0 0 3px #68e0bd18}
-.row{display:flex;gap:10px}.row>*{flex:1}.btn{border:0;border-radius:11px;padding:12px 16px;font:700 14px inherit;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn:disabled{opacity:.42;cursor:not-allowed}.primary{background:linear-gradient(100deg,#66dfbb,#8eb8ff);color:#081421}.secondary{background:#1c3048;border:1px solid #38516e;color:#dceaff}.ghost{background:transparent;border:1px solid #334963;color:#cbd8e8}.btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06)}
-.small{font-size:12px;color:var(--muted)}.security{display:flex;gap:9px;padding:12px;background:#0d1a2b;border:1px solid #263c55;border-radius:12px;color:#aabbd0;font-size:12px;margin-top:12px}.statusline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.dot{width:8px;height:8px;border-radius:50%;background:#75869b}.dot.ok{background:var(--accent);box-shadow:0 0 12px #68e0bd88}.dot.bad{background:var(--danger)}
-.drop{border:1.5px dashed #47617e;border-radius:16px;background:#0d1829;padding:30px 18px;text-align:center;cursor:pointer;transition:.2s}.drop:hover,.drop.over{border-color:var(--accent);background:#112339}.drop .glyph{font-size:32px}.drop strong{display:block;margin:8px 0 3px}.filemeta{margin-top:12px;color:#c5d6e9;font-size:13px;overflow-wrap:anywhere}.hidden{display:none!important}
-.warning{color:#f4d79c;background:#2a2419;border:1px solid #5c4a29;border-radius:12px;padding:12px 14px;font-size:12px;margin-top:14px}.steps{display:grid;gap:12px}.buildstep{display:flex;align-items:center;gap:12px;color:#7589a2;font-size:13px}.buildstep .ico{height:30px;width:30px;border:1px solid #334963;background:#101d30;border-radius:9px;display:grid;place-items:center}.buildstep.active{color:#e8f2ff}.buildstep.done .ico{color:var(--accent);border-color:#367d6b}.buildstep.failed .ico{color:var(--danger);border-color:#88404b}
-.bar{height:7px;background:#22344b;border-radius:20px;overflow:hidden;margin:16px 0}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#65dfbd,#7caeff);border-radius:20px;transition:width .4s}.notice{display:none;padding:13px 14px;border-radius:12px;margin-top:14px;font-size:13px;overflow-wrap:anywhere}.notice.show{display:block}.notice.info{background:#102a3c;color:#c6e5f4;border:1px solid #28516b}.notice.error{background:#301d27;color:#ffd8dc;border:1px solid #71404a}.notice.success{background:#102e2a;color:#c8f6e8;border:1px solid #286653}
-.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.links a{color:#9ec3ff;font-size:13px;text-decoration:none}.links a:hover{text-decoration:underline}
-.foot{margin-top:34px;text-align:center;color:#6f829c;font-size:12px}.repo{font:12px ui-monospace,monospace;color:#b2c6de;background:#0d1829;padding:5px 8px;border-radius:7px}
-@media(max-width:600px){.wrap{padding:22px 14px 45px}.top{margin-bottom:38px}.card{padding:18px}.row{flex-direction:column}.pill{display:none}}
+:root{color-scheme:dark;--bg:#0b1220;--card:#121e30;--line:#293b53;--text:#edf4ff;--muted:#91a4bc;--mint:#68dfbd;--blue:#85b4ff;--red:#ff8490}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1c3952 0,transparent 54%),var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{width:min(690px,calc(100% - 32px));margin:0 auto;padding:28px 0 48px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:42px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:750;font-size:16px}
+.logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(140deg,var(--mint),var(--blue));color:#071321;font-size:21px;font-weight:900}
+.tag{font-size:11px;color:#b5c7dc;border:1px solid #344960;padding:5px 9px;border-radius:99px}
+h1{font-size:clamp(30px,6vw,43px);line-height:1.12;letter-spacing:-1.5px;text-align:center;margin:0 0 9px}
+h1 span{color:var(--mint)}
+.lead{text-align:center;color:var(--muted);margin:0 auto 28px;max-width:540px}
+.card{background:linear-gradient(160deg,#142238,#101b2c);border:1px solid var(--line);border-radius:17px;padding:20px;margin:14px 0;box-shadow:0 14px 40px #0002}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.cardhead h2{font-size:16px;margin:0}
+.muted{color:var(--muted);font-size:12px;margin-top:3px}
+.status{font-size:12px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#788ba3}.dot.ok{background:var(--mint)}.dot.err{background:var(--red)}
+label{display:block;font-size:12px;color:#c7d5e6;font-weight:650;margin:12px 0 7px}
+input[type=password]{width:100%;border:1px solid #344b65;background:#0a1525;color:var(--text);border-radius:10px;padding:12px;font:inherit;outline:none}
+input:focus{border-color:var(--mint);box-shadow:0 0 0 3px #68dfbd18}
+.actions{display:flex;gap:9px;margin-top:10px}
+button,.btn{border:0;border-radius:10px;padding:11px 15px;font:700 13px inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;transition:.15s}
+button:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:linear-gradient(100deg,var(--mint),var(--blue));color:#071521;flex:1}
+.secondary{background:#20334b;color:#e5efff;border:1px solid #3a536f}
+.outline{background:transparent;color:#c4d3e5;border:1px solid #3a5068}
+button:not(:disabled):hover,.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.filebox{border:1.5px dashed #48617d;background:#0c1829;border-radius:14px;padding:25px 16px;text-align:center;cursor:pointer}
+.filebox:hover,.filebox.over{border-color:var(--mint);background:#102238}
+.fileicon{font-size:28px}.filetitle{font-weight:700;margin-top:5px}.filehint{font-size:12px;color:var(--muted);margin-top:3px}
+.filename{font-size:12px;color:#c5d6e9;margin-top:11px;overflow-wrap:anywhere}
+.hidden{display:none!important}
+.warn{font-size:11px;line-height:1.45;color:#e9d29c;background:#292418;border:1px solid #594a2e;border-radius:10px;padding:10px 11px;margin-top:12px}
+.help{font-size:11px;color:var(--muted);margin-top:10px}
+.progresswrap{margin-top:17px;padding-top:15px;border-top:1px solid #293b53}
+.proghead{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:8px}
+.proglabel{color:#cbd9e9}.percent{color:var(--mint);font-weight:800;font-variant-numeric:tabular-nums}
+.track{height:9px;border-radius:99px;background:#26384e;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#5dddb7,#8bb7ff);border-radius:99px;transition:width .12s linear}
+.indeterminate{height:100%;width:34%;background:linear-gradient(90deg,transparent,#7ee5c5,transparent);animation:slide 1.3s ease-in-out infinite}
+@keyframes slide{from{transform:translateX(-120%)}to{transform:translateX(320%)}}
+.notice{display:none;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:12px;overflow-wrap:anywhere}
+.notice.show{display:block}.notice.info{background:#102a3b;border:1px solid #2a526a;color:#c8e8f5}.notice.error{background:#301d27;border:1px solid #70424d;color:#ffd9de}.notice.success{background:#102e29;border:1px solid #2c6757;color:#caf7e7}
+.result{display:none;margin-top:16px;padding:17px;border-radius:14px;background:#102e29;border:1px solid #2c6757}
+.result.show{display:block}.result h3{margin:0 0 4px;color:#caf7e7;font-size:17px}.result p{margin:0;color:#a9d9c9;font-size:12px}
+.download{margin-top:13px;width:100%;background:linear-gradient(100deg,#68dfbd,#9be6c8);color:#071a16;font-size:14px;padding:13px}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.links a{font-size:12px;color:#a9caff;text-decoration:none}.links a:hover{text-decoration:underline}
+.foot{text-align:center;color:#70839c;font-size:11px;margin-top:27px}
+@media(max-width:520px){.wrap{padding-top:20px}.tag{display:none}.card{padding:16px}.actions{flex-direction:column}header{margin-bottom:32px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <div class="brand"><div class="logo">⌘</div><div>Android Auto Builder<div class="small">ZIP → APK · Cloud build</div></div></div>
-    <div class="pill">GITHUB ACTIONS · CLOUD</div>
-  </header>
+<header>
+  <div class="brand"><div class="logo">A</div><div>Android Auto Builder<div class="muted">Cloud APK builder</div></div></div>
+  <div class="tag">GITHUB ACTIONS</div>
+</header>
+<h1>ZIP in. <span>APK out.</span></h1>
+<p class="lead">Choose your Android project ZIP, upload it to GitHub, and let the cloud build your APK.</p>
 
-  <section class="hero">
-    <div class="eyebrow">No Android Studio required</div>
-    <h1>Your project ZIP.<br><span>A ready-to-install APK.</span></h1>
-    <p>Upload a complete Android project ZIP. GitHub Actions builds it in the cloud, then this page helps you download the APK.</p>
-  </section>
+<section class="card">
+  <div class="cardhead">
+    <div><h2>1. Connect GitHub</h2><div class="muted">Use a fine-grained token limited to this repository.</div></div>
+    <div id="connectionStatus" class="status"><i class="dot"></i><span>Not connected</span></div>
+  </div>
+  <label for="token">GitHub Personal Access Token</label>
+  <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your fine-grained token">
+  <div class="actions">
+    <button id="connectBtn" class="secondary">Connect & verify</button>
+    <button id="clearTokenBtn" class="outline">Clear</button>
+  </div>
+  <div class="help">Required permissions: Contents — Read and write · Actions — Read. Token remains in this tab's memory only.</div>
+</section>
 
-  <section class="card">
-    <div class="card-head"><div class="step"><div class="num">1</div><div><h2>Connect GitHub</h2><div class="sub">A temporary token lets this page upload your ZIP and read build results.</div></div></div><div id="connectionStatus" class="statusline"><i class="dot"></i><span>Not connected</span></div></div>
-    <label for="token">Fine-grained Personal Access Token</label>
-    <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_••••••••••••••••">
-    <div class="row" style="margin-top:12px">
-      <button id="connectBtn" class="btn secondary">Connect & verify</button>
-      <button id="clearTokenBtn" class="btn ghost">Clear token</button>
-    </div>
-    <div class="security"><span>🔒</span><span>Token stays in this browser tab's memory and is sent only to api.github.com. It is not saved in local storage or uploaded to this website. Use a token limited to this repository.</span></div>
-    <p class="small">Required token permissions for this repository: <b>Contents: Read and write</b> and <b>Actions: Read</b>.</p>
-  </section>
+<section class="card">
+  <div class="cardhead">
+    <div><h2>2. Select your Android ZIP</h2><div class="muted">Complete Gradle project · Up to 50 MB</div></div>
+    <div class="status">xtobi/Android-Auto-Builder</div>
+  </div>
+  <input id="fileInput" class="hidden" type="file" accept=".zip,application/zip">
+  <div id="drop" class="filebox" role="button" tabindex="0">
+    <div class="fileicon">📦</div><div class="filetitle">Choose ZIP file</div>
+    <div class="filehint">Click to browse or drag and drop</div>
+    <div id="fileMeta" class="filename">No file selected</div>
+  </div>
+  <div class="warn">Public repository: uploaded ZIP files and source code are visible to everyone. Never upload passwords, API keys, signing keys, keystores, or private projects.</div>
+  <button id="buildBtn" class="primary" style="width:100%;margin-top:15px" disabled>Upload ZIP & Build APK</button>
 
-  <section class="card">
-    <div class="card-head"><div class="step"><div class="num">2</div><div><h2>Select Android project ZIP</h2><div class="sub">Choose a complete Gradle Android project archive.</div></div></div><span class="repo">xtobi/Android-Auto-Builder</span></div>
-    <input id="fileInput" class="hidden" type="file" accept=".zip,application/zip">
-    <div id="drop" class="drop" role="button" tabindex="0" aria-label="Choose Android project ZIP">
-      <div class="glyph">📦</div><strong>Drop your project ZIP here</strong><div class="small">or click to browse files · Maximum 50 MB</div>
-      <div id="fileMeta" class="filemeta">No file selected</div>
-    </div>
-    <div class="warning">This repository is PUBLIC. Any ZIP uploaded here becomes publicly accessible. Do not upload confidential source code, API keys, passwords, signing keys, keystores, or personal data.</div>
-    <button id="buildBtn" class="btn primary" style="width:100%;margin-top:18px" disabled>↑ Upload ZIP & Build APK</button>
-  </section>
-
-  <section id="progressCard" class="card hidden">
-    <div class="card-head"><div><h2>Build progress</h2><div id="buildCaption" class="sub">Preparing upload…</div></div><span id="runBadge" class="pill">Waiting</span></div>
-    <div class="bar"><i id="progressBar"></i></div>
-    <div class="steps">
-      <div id="stepUpload" class="buildstep"><span class="ico">↑</span><span>Upload project ZIP to GitHub</span></div>
-      <div id="stepQueue" class="buildstep"><span class="ico">◷</span><span>Queue cloud build</span></div>
-      <div id="stepBuild" class="buildstep"><span class="ico">⚙</span><span>Set up JDK 17, Android SDK & Gradle</span></div>
-      <div id="stepApk" class="buildstep"><span class="ico">↓</span><span>Collect APK artifact</span></div>
-    </div>
+  <div id="progressArea" class="progresswrap hidden">
+    <div class="proghead"><span id="progressLabel" class="proglabel">Uploading project ZIP…</span><span id="progressPercent" class="percent">0%</span></div>
+    <div class="track"><div id="progressFill" class="fill"></div></div>
+    <div id="buildStatus" class="muted" style="margin-top:10px">Waiting to start</div>
     <div id="notice" class="notice"></div>
+    <div id="successResult" class="result">
+      <h3>✓ APK created successfully!</h3>
+      <p>Your Android APK is ready. Click below to download the APK file directly to your device.</p>
+      <a id="apkDownload" class="btn download" href="#" download>↓ Download APK</a>
+    </div>
     <div id="resultLinks" class="links"></div>
-  </section>
-
-  <div class="foot">Built for <b>Infinix Smart 8 · Android 13</b> · Powered by GitHub Actions<br>Debug APKs are for testing and sideloading, not Play Store release builds.</div>
+  </div>
+</section>
+<div class="foot">Runs on GitHub-hosted Linux · JDK 17 · Android SDK · Gradle<br>Debug APKs are for testing and sideloading.</div>
 </div>
 <script>
 (() => {
-  const OWNER = "xtobi", REPO = "Android-Auto-Builder", BRANCH = "main";
-  const API = "https://api.github.com";
-  let token = "", selectedFile = null, connected = false, activeRunId = null;
-  const $ = id => document.getElementById(id);
-  const btnConnect = $("connectBtn"), btnBuild = $("buildBtn");
-  function setNotice(message, type="info") {
-    const el=$("notice"); el.textContent=message; el.className="notice show "+type;
+const OWNER="xtobi",REPO="Android-Auto-Builder",BRANCH="main",API="https://api.github.com";
+let token="",selectedFile=null,connected=false;
+const $=id=>document.getElementById(id),connectBtn=$("connectBtn"),buildBtn=$("buildBtn");
+function notice(msg,type){const e=$("notice");e.textContent=msg;e.className="notice show "+type}
+function status(ok,msg){connected=ok;$("connectionStatus").innerHTML='<i class="dot '+(ok?"ok":"err")+'"></i><span>'+msg+'</span>';buildBtn.disabled=!(ok&&selectedFile)}
+async function api(path,options={}){
+ const r=await fetch(API+path,{...options,headers:{Accept:"application/vnd.github+json",Authorization:"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28",...(options.headers||{})}});
+ const t=await r.text();let d={};try{d=t?JSON.parse(t):{}}catch{}
+ if(!r.ok)throw new Error(d.message||("GitHub API error "+r.status));return d;
+}
+connectBtn.onclick=async()=>{
+ const value=$("token").value.trim();if(!value){status(false,"Token required");return}
+ token=value;connectBtn.disabled=true;connectBtn.textContent="Checking…";
+ try{
+  const r=await api("/repos/"+OWNER+"/"+REPO);
+  if(r.default_branch!==BRANCH)throw new Error("Repository default branch must be main.");
+  await api("/repos/"+OWNER+"/"+REPO+"/actions/workflows/build-android.yml");
+  status(true,"Connected");$("token").value="";notice("GitHub connection verified.","success");
+ }catch(e){token="";status(false,"Connection failed");notice(e.message,"error")}
+ finally{connectBtn.disabled=false;connectBtn.textContent="Connect & verify"}
+};
+$("clearTokenBtn").onclick=()=>{token="";$("token").value="";status(false,"Not connected");notice("Token cleared from memory.","info")};
+const drop=$("drop"),picker=$("fileInput");
+drop.onclick=()=>picker.click();
+drop.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();picker.click()}};
+["dragenter","dragover"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove("over")}));
+drop.addEventListener("drop",e=>choose(e.dataTransfer.files[0]));picker.onchange=()=>choose(picker.files[0]);
+function choose(file){
+ if(!file)return;
+ if(!file.name.toLowerCase().endsWith(".zip")){notice("Please choose a ZIP file.","error");return}
+ if(file.size>50*1024*1024){notice("Maximum ZIP size is 50 MB.","error");return}
+ selectedFile=file;$("fileMeta").textContent=file.name+" · "+(file.size/1048576).toFixed(2)+" MB";
+ buildBtn.disabled=!connected; if(connected)notice("Ready to upload.","success");
+}
+function uploadProgress(loaded,total){
+ const pct=total?Math.min(100,Math.floor(loaded/total*100)):0;
+ $("progressFill").className="fill";$("progressFill").style.width=pct+"%";$("progressPercent").textContent=pct+"%";
+ $("progressLabel").textContent=pct<100?"Uploading project ZIP…":"Upload complete";
+ $("buildStatus").textContent=total?(loaded/1048576).toFixed(1)+" MB of "+(total/1048576).toFixed(1)+" MB sent":"Uploading…";
+}
+async function encodeBase64(file){
+ const bytes=new Uint8Array(await file.arrayBuffer());let binary="";const size=0x8000;
+ for(let i=0;i<bytes.length;i+=size)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+size,bytes.length)));
+ return btoa(binary);
+}
+async function uploadWithProgress(file,path){
+ const content=await encodeBase64(file);
+ const body=JSON.stringify({message:"Upload Android project ZIP: "+file.name,content,branch:BRANCH});
+ return new Promise((resolve,reject)=>{
+  const xhr=new XMLHttpRequest();
+  xhr.open("PUT",API+"/repos/"+OWNER+"/"+REPO+"/contents/"+path.split("/").map(encodeURIComponent).join("/"));
+  xhr.setRequestHeader("Accept","application/vnd.github+json");xhr.setRequestHeader("Authorization","Bearer "+token);
+  xhr.setRequestHeader("X-GitHub-Api-Version","2022-11-28");xhr.setRequestHeader("Content-Type","application/json");
+  xhr.upload.onprogress=e=>{if(e.lengthComputable)uploadProgress(e.loaded,e.total)};
+  xhr.onerror=()=>reject(new Error("Network error while uploading the ZIP."));
+  xhr.onload=()=>{let d={};try{d=JSON.parse(xhr.responseText||"{}")}catch{}
+   if(xhr.status<200||xhr.status>=300){reject(new Error(d.message||("GitHub upload failed: HTTP "+xhr.status)));return}
+   resolve(d);
+  };xhr.send(body);
+ });
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function findRun(sha){
+ const d=await api("/repos/"+OWNER+"/"+REPO+"/actions/workflows/build-android.yml/runs?branch="+BRANCH+"&event=push&per_page=20&head_sha="+encodeURIComponent(sha));
+ return (d.workflow_runs||[]).find(r=>r.head_sha===sha)||null;
+}
+async function monitorRun(sha){
+ let run=null;
+ for(let i=0;i<80;i++){run=await findRun(sha);if(run)break;await sleep(4000)}
+ if(!run)throw new Error("GitHub did not start a build for this upload. Check the repository Actions settings.");
+ $("resultLinks").innerHTML='<a target="_blank" rel="noopener" href="'+run.html_url+'">View build logs on GitHub ↗</a>';
+ $("progressLabel").textContent="Cloud build";$("progressPercent").textContent="—";$("progressFill").className="indeterminate";$("progressFill").style.width="34%";
+ $("buildStatus").textContent="GitHub is setting up JDK 17, Android SDK and Gradle. This stage can take a few minutes.";
+ for(let i=0;i<540;i++){
+  const current=await api("/repos/"+OWNER+"/"+REPO+"/actions/runs/"+run.id);
+  if(current.status==="completed")return current;
+  await sleep(5000);
+ }
+ throw new Error("Build is taking longer than 45 minutes. Open the GitHub Actions run for details.");
+}
+async function downloadApk(run){
+ const d=await api("/repos/"+OWNER+"/"+REPO+"/actions/runs/"+run.id+"/artifacts");
+ const artifact=(d.artifacts||[]).find(a=>a.name==="android-debug-apk"&&!a.expired);
+ if(!artifact)throw new Error("Build succeeded but the APK artifact was not found. Open the Actions run.");
+ $("progressLabel").textContent="Downloading APK";$("progressPercent").textContent="…";$("progressFill").className="indeterminate";$("buildStatus").textContent="Retrieving the APK from GitHub Actions…";
+ const r=await fetch(API+"/repos/"+OWNER+"/"+REPO+"/actions/artifacts/"+artifact.id+"/zip",{headers:{Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}});
+ if(!r.ok)throw new Error("GitHub could not provide the artifact directly (HTTP "+r.status+"). Use the View build logs link and download the artifact from GitHub.");
+ const blob=await r.blob();
+ if(!window.JSZip)throw new Error("The APK archive helper did not load. Download the artifact ZIP from GitHub and extract the APK.");
+ const archive=await JSZip.loadAsync(blob);
+ const names=Object.keys(archive.files).filter(n=>!archive.files[n].dir&&n.toLowerCase().endsWith(".apk"));
+ if(!names.length)throw new Error("The build artifact did not contain an APK file.");
+ if(names.length===1){
+  const apk=await archive.files[names[0]].async("blob");
+  const url=URL.createObjectURL(apk),link=$("apkDownload");
+  link.href=url;link.download=names[0].split("/").pop();$("successResult").classList.add("show");
+  return 1;
+ }
+ const result=$("resultLinks");result.innerHTML="";
+ for(const name of names){
+  const apk=await archive.files[name].async("blob"),url=URL.createObjectURL(apk),a=document.createElement("a");
+  a.href=url;a.download=name.split("/").pop();a.className="btn secondary";a.textContent="↓ "+a.download;result.appendChild(a);
+ }
+ return names.length;
+}
+buildBtn.onclick=async()=>{
+ if(!connected||!selectedFile)return;
+ buildBtn.disabled=true;buildBtn.textContent="Working…";$("progressArea").classList.remove("hidden");
+ $("successResult").classList.remove("show");$("resultLinks").innerHTML="";$("notice").className="notice";
+ $("progressFill").className="fill";$("progressFill").style.width="0%";$("progressPercent").textContent="0%";
+ try{
+  $("progressLabel").textContent="Preparing upload";$("buildStatus").textContent="Encoding ZIP for GitHub upload…";
+  const base=selectedFile.name.replace(/[^a-zA-Z0-9._-]/g,"_").replace(/\.zip$/i,"").slice(0,55)||"android-project";
+  const path="input/"+base+"-"+new Date().toISOString().replace(/[:.]/g,"-")+".zip";
+  const uploaded=await uploadWithProgress(selectedFile,path);
+  $("progressFill").className="fill";$("progressFill").style.width="100%";$("progressPercent").textContent="100%";
+  $("progressLabel").textContent="ZIP uploaded";$("buildStatus").textContent="Upload complete. Waiting for GitHub Actions…";
+  const run=await monitorRun(uploaded.commit.sha);
+  if(run.conclusion!=="success")throw new Error("APK build failed ("+run.conclusion+"). Open the build logs link for the exact Gradle error.");
+  const count=await downloadApk(run);
+  $("progressFill").className="fill";$("progressFill").style.width="100%";$("progressPercent").textContent="100%";
+  $("progressLabel").textContent="APK ready";$("buildStatus").textContent=count+" APK file(s) successfully created.";
+  if(count===1)notice("Your APK has been created successfully and is ready. Click “Download APK” below.","success");
+  else notice("Your APK files have been created. Choose the file you want to download below.","success");
+ }catch(e){
+  notice(e.message,"error");
+  if(e.message.includes("artifact")||e.message.includes("directly")||e.message.includes("helper")){
+   $("resultLinks").innerHTML+='<a target="_blank" rel="noopener" href="https://github.com/'+OWNER+'/'+REPO+'/actions">Open GitHub Actions and download artifact ↗</a>';
   }
-  function setConnection(ok, label) {
-    connected=ok;
-    $("connectionStatus").innerHTML='<i class="dot '+(ok?'ok':'bad')+'"></i><span></span>';
-    $("connectionStatus").querySelector("span").textContent=label;
-    btnBuild.disabled=!(connected && selectedFile);
-  }
-  async function api(path, options={}) {
-    const response=await fetch(API+path,{...options,headers:{
-      "Accept":"application/vnd.github+json",
-      "Authorization":"Bearer "+token,
-      "X-GitHub-Api-Version":"2022-11-28",
-      ...(options.headers||{})
-    }});
-    const raw=await response.text();
-    let data={}; try{data=raw?JSON.parse(raw):{};}catch{}
-    if(!response.ok) throw new Error(data.message || ("GitHub API error "+response.status));
-    return data;
-  }
-  btnConnect.addEventListener("click",async()=>{
-    const entered=$("token").value.trim();
-    if(!entered){setConnection(false,"Token required");return;}
-    token=entered; btnConnect.disabled=true; btnConnect.textContent="Checking…";
-    try{
-      const repo=await api("/repos/"+OWNER+"/"+REPO);
-      if(repo.default_branch!==BRANCH) throw new Error("Repository default branch is not main.");
-      await api("/repos/"+OWNER+"/"+REPO+"/actions/workflows/build-android.yml");
-      setConnection(true,"Connected · "+repo.full_name);
-      $("token").value="";
-      setNotice("GitHub connection verified. Your token remains in memory only until this tab is closed or cleared.","success");
-    }catch(e){token="";setConnection(false,"Connection failed");setNotice(e.message,"error");}
-    finally{btnConnect.disabled=false;btnConnect.textContent="Connect & verify";}
-  });
-  $("clearTokenBtn").addEventListener("click",()=>{
-    token="";$("token").value="";setConnection(false,"Not connected");setNotice("Token cleared from this page.","info");
-  });
-  const drop=$("drop"), fileInput=$("fileInput");
-  drop.addEventListener("click",()=>fileInput.click());
-  drop.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}});
-  ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
-  ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
-  drop.addEventListener("drop",e=>chooseFile(e.dataTransfer.files[0]));
-  fileInput.addEventListener("change",()=>chooseFile(fileInput.files[0]));
-  function chooseFile(file){
-    if(!file)return;
-    if(!file.name.toLowerCase().endsWith(".zip")){setNotice("Please select a .zip file.","error");return;}
-    if(file.size>50*1024*1024){setNotice("This page supports ZIP files up to 50 MB. Please reduce the archive size.","error");return;}
-    selectedFile=file;
-    $("fileMeta").textContent=file.name+" · "+(file.size/1024/1024).toFixed(2)+" MB";
-    btnBuild.disabled=!connected;
-    if(connected)setNotice("Project ZIP selected. Ready to upload.","success");
-  }
-  function progress(p,caption,badge){
-    $("progressBar").style.width=p+"%";$("buildCaption").textContent=caption;$("runBadge").textContent=badge;
-  }
-  function step(id,state){
-    const el=$(id);el.className="buildstep "+state;
-    const icon=el.querySelector(".ico");
-    if(state==="done")icon.textContent="✓";else if(state==="active")icon.textContent="●";else if(state==="failed")icon.textContent="!";
-  }
-  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  async function base64File(file){
-    const bytes=new Uint8Array(await file.arrayBuffer());
-    let binary="",chunk=0x8000;
-    for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+chunk,bytes.length)));
-    return btoa(binary);
-  }
-  async function upload(){
-    const safeBase=selectedFile.name.replace(/[^a-zA-Z0-9._-]/g,"_").replace(/\.zip$/i,"").slice(0,60)||"android-project";
-    const path="input/"+safeBase+"-"+new Date().toISOString().replace(/[:.]/g,"-")+".zip";
-    const content=await base64File(selectedFile);
-    const result=await api("/repos/"+OWNER+"/"+REPO+"/contents/"+path.split("/").map(encodeURIComponent).join("/"),{
-      method:"PUT",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:"Upload Android project ZIP: "+selectedFile.name,content,branch:BRANCH})
-    });
-    return {path,sha:result.commit.sha,html:result.content.html_url};
-  }
-  async function findRun(commitSha){
-    const data=await api("/repos/"+OWNER+"/"+REPO+"/actions/workflows/build-android.yml/runs?branch="+BRANCH+"&event=push&per_page=20&head_sha="+encodeURIComponent(commitSha));
-    return (data.workflow_runs||[]).find(r=>r.head_sha===commitSha)||null;
-  }
-  async function waitForRun(commitSha){
-    let run=null;
-    for(let i=0;i<80;i++){run=await findRun(commitSha);if(run)break;await sleep(5000);}
-    if(!run)throw new Error("GitHub did not create a workflow run for this upload. Check Actions permissions and the workflow path filter.");
-    activeRunId=run.id;
-    $("resultLinks").innerHTML='<a target="_blank" rel="noopener" href="'+run.html_url+'">Open this build on GitHub ↗</a>';
-    for(let i=0;i<540;i++){
-      const current=await api("/repos/"+OWNER+"/"+REPO+"/actions/runs/"+run.id);
-      if(current.status==="completed")return current;
-      const elapsed=i*5;
-      progress(35+Math.min(50,elapsed/240*50),"Cloud build running… ("+Math.floor(elapsed/60)+"m "+(elapsed%60)+"s)","In progress");
-      step("stepQueue","done");step("stepBuild","active");
-      await sleep(5000);
-    }
-    throw new Error("Build is still running after 45 minutes. Open the GitHub Actions run for its latest status.");
-  }
-  async function downloadApk(run){
-    const data=await api("/repos/"+OWNER+"/"+REPO+"/actions/runs/"+run.id+"/artifacts");
-    const artifact=(data.artifacts||[]).find(a=>a.name==="android-debug-apk"&&!a.expired);
-    if(!artifact)throw new Error("Build completed, but the android-debug-apk artifact was not found. Open the Actions run for logs.");
-    const response=await fetch(API+"/repos/"+OWNER+"/"+REPO+"/actions/artifacts/"+artifact.id+"/zip",{
-      headers:{"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}
-    });
-    if(!response.ok)throw new Error("Could not download the APK artifact (HTTP "+response.status+"). Use the GitHub Actions link to download it.");
-    const blob=await response.blob();
-    if(!window.JSZip)throw new Error("APK artifact downloaded, but the ZIP extractor did not load. Download the artifact ZIP from GitHub and extract the APK.");
-    const archive=await JSZip.loadAsync(blob);
-    const apkNames=Object.keys(archive.files).filter(n=>!archive.files[n].dir&&n.toLowerCase().endsWith(".apk"));
-    if(!apkNames.length)throw new Error("No APK file was present inside the build artifact.");
-    for(const name of apkNames){
-      const apkBlob=await archive.files[name].async("blob");
-      const url=URL.createObjectURL(apkBlob);
-      const a=document.createElement("a");a.href=url;a.download=name.split("/").pop();a.className="btn primary";a.textContent="↓ Download "+a.download;
-      $("resultLinks").appendChild(a);
-    }
-    return apkNames.length;
-  }
-  btnBuild.addEventListener("click",async()=>{
-    if(!connected||!selectedFile)return;
-    $("progressCard").classList.remove("hidden");btnBuild.disabled=true;btnBuild.textContent="Building…";
-    $("resultLinks").innerHTML="";$("notice").className="notice";
-    try{
-      progress(8,"Uploading ZIP to your GitHub repository…","Uploading");step("stepUpload","active");
-      const uploaded=await upload();
-      step("stepUpload","done");progress(22,"ZIP committed. Waiting for GitHub Actions…","Queued");step("stepQueue","active");
-      const run=await waitForRun(uploaded.sha);
-      step("stepQueue","done");
-      if(run.conclusion!=="success"){step("stepBuild","failed");progress(100,"Build failed. Open the run to inspect Gradle logs.","Failed");throw new Error("GitHub Actions finished with conclusion: "+run.conclusion+". Open the linked run for the exact error.");}
-      step("stepBuild","done");progress(88,"Build succeeded. Downloading APK artifact…","Success");
-      const count=await downloadApk(run);
-      step("stepApk","done");progress(100,"Your APK is ready to download.","Completed");
-      setNotice("Success! "+count+" APK file(s) are ready. Tap a download button below.","success");
-    }catch(e){setNotice(e.message,"error");if(!$("resultLinks").children.length&&activeRunId){$("resultLinks").innerHTML='<a target="_blank" rel="noopener" href="https://github.com/'+OWNER+'/'+REPO+'/actions">Open GitHub Actions ↗</a>';}}
-    finally{btnBuild.disabled=false;btnBuild.textContent="↑ Upload ZIP & Build APK";}
-  });
+ }finally{buildBtn.disabled=!(connected&&selectedFile);buildBtn.textContent="Upload ZIP & Build APK";}
+};
 })();
 </script>
 </body>
