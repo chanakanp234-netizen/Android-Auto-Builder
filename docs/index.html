@@ -24,7 +24,7 @@ h1 span{color:var(--mint)}
 .status{font-size:12px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:7px}
 .dot{width:7px;height:7px;border-radius:50%;background:#788ba3}.dot.ok{background:var(--mint)}.dot.err{background:var(--red)}
 label{display:block;font-size:12px;color:#c7d5e6;font-weight:650;margin:12px 0 7px}
-input[type=password]{width:100%;border:1px solid #344b65;background:#0a1525;color:var(--text);border-radius:10px;padding:12px;font:inherit;outline:none}
+input[type=password],input[type=text]{width:100%;border:1px solid #344b65;background:#0a1525;color:var(--text);border-radius:10px;padding:12px;font:inherit;outline:none}
 input:focus{border-color:var(--mint);box-shadow:0 0 0 3px #68dfbd18}
 .actions{display:flex;gap:9px;margin-top:10px}
 button,.btn{border:0;border-radius:10px;padding:11px 15px;font:700 13px inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;transition:.15s}
@@ -103,7 +103,10 @@ button:not(:disabled):hover,.btn:hover{filter:brightness(1.08);transform:transla
     <div id="successResult" class="result">
       <h3>✓ APK created successfully!</h3>
       <p>Your Android APK is ready. Click below to download the APK file directly to your device.</p>
-      <a id="apkDownload" class="btn download" href="#" download>↓ Download APK</a>
+      <a id="apkDownload" class="btn download" href="#" rel="noopener">↓ Download APK</a>
+      <label for="apkDirectUrl">Direct GitHub download link</label>
+      <input id="apkDirectUrl" type="text" readonly value="" onclick="this.select()">
+      <button id="copyApkLink" class="secondary" type="button" style="width:100%;margin-top:9px">Copy direct APK link</button>
     </div>
     <div id="resultLinks" class="links"></div>
   </div>
@@ -214,66 +217,65 @@ async function monitorRun(sha){
 async function downloadApk(run){
  const tag="android-apk-build-"+run.id;
  let release=null;
- // Prefer a public GitHub Release asset: this gives the browser a direct .apk URL
- // and avoids cross-origin artifact ZIP download/CORS issues.
- for(let i=0;i<20;i++){
+ $("progressLabel").textContent="Preparing direct APK link";
+ $("progressPercent").textContent="…";
+ $("progressFill").className="indeterminate";
+ $("buildStatus").textContent="Waiting for GitHub to publish the APK download link…";
+
+ // Use only a real, shareable GitHub Release URL. Never expose temporary blob: URLs.
+ for(let i=0;i<30;i++){
   try{
    release=await api("/repos/"+OWNER+"/"+REPO+"/releases/tags/"+tag);
-   if((release.assets||[]).some(a=>a.name.toLowerCase().endsWith(".apk")))break;
-   release=null;
-  }catch{release=null}
+   const assets=(release.assets||[]).filter(a=>a.name.toLowerCase().endsWith(".apk"));
+   if(assets.length){
+    if(assets.length===1){
+     const directUrl=assets[0].browser_download_url;
+     if(!directUrl||!directUrl.startsWith("https://github.com/"))throw new Error("GitHub returned an invalid direct APK URL.");
+     const link=$("apkDownload");
+     link.href=directUrl;
+     link.removeAttribute("download");
+     link.textContent="↓ Download APK";
+     $("apkDirectUrl").value=directUrl;
+     $("successResult").classList.add("show");
+     return 1;
+    }
+    const result=$("resultLinks");result.innerHTML="";
+    for(const asset of assets){
+     const directUrl=asset.browser_download_url;
+     if(!directUrl||!directUrl.startsWith("https://github.com/"))continue;
+     const item=document.createElement("div");
+     item.style="width:100%;margin-top:9px";
+     const a=document.createElement("a");
+     a.href=directUrl;a.className="btn secondary";a.textContent="↓ "+asset.name;
+     const url=document.createElement("input");
+     url.type="text";url.readOnly=true;url.value=directUrl;url.style="margin-top:6px";
+     const copy=document.createElement("button");
+     copy.type="button";copy.className="secondary";copy.style="width:100%;margin-top:6px";
+     copy.textContent="Copy direct link";
+     copy.onclick=async()=>{try{await navigator.clipboard.writeText(directUrl);notice("Direct APK link copied.","success")}catch{url.focus();url.select();notice("Select and copy the link above.","info")}};
+     item.append(a,url,copy);result.appendChild(item);
+    }
+    if(result.children.length)return result.children.length;
+   }
+  }catch(e){
+   if(e.message&&e.message.includes("invalid direct APK URL"))throw e;
+  }
+  release=null;
   await sleep(3000);
  }
- if(release){
-  const assets=(release.assets||[]).filter(a=>a.name.toLowerCase().endsWith(".apk"));
-  if(assets.length===1){
-   const a=assets[0],link=$("apkDownload");
-   link.href=a.browser_download_url;
-   link.removeAttribute("download");
-   link.textContent="↓ Download APK";
-   $("successResult").classList.add("show");
-   return 1;
-  }
-  if(assets.length>1){
-   const result=$("resultLinks");result.innerHTML="";
-   for(const asset of assets){
-    const a=document.createElement("a");
-    a.href=asset.browser_download_url;a.className="btn secondary";
-    a.textContent="↓ "+asset.name;result.appendChild(a);
-   }
-   return assets.length;
-  }
- }
- // Backward-compatible fallback for builds made before direct Release publishing.
- const d=await api("/repos/"+OWNER+"/"+REPO+"/actions/runs/"+run.id+"/artifacts");
- const artifact=(d.artifacts||[]).find(a=>a.name==="android-debug-apk"&&!a.expired);
- if(!artifact)throw new Error("Build succeeded but neither a direct APK release nor an APK artifact was found. Open the Actions run.");
- $("progressLabel").textContent="Downloading APK";$("progressPercent").textContent="…";
- $("progressFill").className="indeterminate";
- $("buildStatus").textContent="Retrieving the APK from GitHub Actions…";
- const r=await fetch(API+"/repos/"+OWNER+"/"+REPO+"/actions/artifacts/"+artifact.id+"/zip",{
-  headers:{Authorization:"Bearer "+token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}
- });
- if(!r.ok)throw new Error("GitHub could not provide the artifact ZIP (HTTP "+r.status+"). Use the View build logs link and download the artifact from GitHub.");
- const blob=await r.blob();
- if(!window.JSZip)throw new Error("The APK archive helper did not load. Download the artifact ZIP from GitHub and extract the APK.");
- const archive=await JSZip.loadAsync(blob);
- const names=Object.keys(archive.files).filter(n=>!archive.files[n].dir&&n.toLowerCase().endsWith(".apk"));
- if(!names.length)throw new Error("The build artifact did not contain an APK file.");
- if(names.length===1){
-  const apk=await archive.files[names[0]].async("blob");
-  const url=URL.createObjectURL(apk),link=$("apkDownload");
-  link.href=url;link.download=names[0].split("/").pop();$("successResult").classList.add("show");
-  return 1;
- }
- const result=$("resultLinks");result.innerHTML="";
- for(const name of names){
-  const apk=await archive.files[name].async("blob"),url=URL.createObjectURL(apk),a=document.createElement("a");
-  a.href=url;a.download=name.split("/").pop();a.className="btn secondary";a.textContent="↓ "+a.download;
-  result.appendChild(a);
- }
- return names.length;
+ throw new Error("The APK build succeeded, but GitHub has not published its direct download link yet. Open the build page and check the Release link: https://github.com/"+OWNER+"/"+REPO+"/releases/tag/"+tag);
 }
+$("copyApkLink").onclick=async()=>{
+ const value=$("apkDirectUrl").value;
+ if(!value){notice("The direct APK link is not ready yet.","error");return}
+ try{
+  await navigator.clipboard.writeText(value);
+  notice("Direct APK link copied. You can paste it into Chrome on your phone.","success");
+ }catch{
+  $("apkDirectUrl").focus();$("apkDirectUrl").select();
+  notice("The link is selected. Use Copy from your browser menu.","info");
+ }
+};
 buildBtn.onclick=async()=>{
  if(!connected||!selectedFile)return;
  buildBtn.disabled=true;buildBtn.textContent="Working…";$("progressArea").classList.remove("hidden");
