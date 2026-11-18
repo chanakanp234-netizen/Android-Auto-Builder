@@ -16,7 +16,6 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: android-apk-${{ github.ref }}
@@ -27,29 +26,37 @@ jobs:
     name: Build Android project ZIP
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
 
-      - name: Choose ZIP path
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Identify uploaded project ZIP
         id: zip
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_SHA: ${{ github.sha }}
+          MANUAL_ZIP_PATH: ${{ inputs.project_zip_path }}
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            ZIP_PATH="${{ inputs.project_zip_path }}"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            ZIP_PATH="$MANUAL_ZIP_PATH"
           else
-            ZIP_PATH="$(git diff-tree --no-commit-id --name-only -r "${GITHUB_SHA}" | grep -E '^input/.*\.zip$' | head -n 1 || true)"
-            if [[ -z "$ZIP_PATH" ]]; then
-              ZIP_PATH="$(find input -maxdepth 2 -type f -name '*.zip' -print -quit 2>/dev/null || true)"
-            fi
+            ZIP_PATH="$(git diff --name-only "$EVENT_BEFORE" "$EVENT_SHA" -- 'input/*.zip' 'input/**/*.zip' | head -n 1 || true)"
           fi
+
           if [[ -z "$ZIP_PATH" || ! -f "$ZIP_PATH" ]]; then
-            echo "::error::No project ZIP found. Add an Android project ZIP under input/."
+            echo "::error::No uploaded project ZIP found. Add one ZIP under input/ and commit it to main."
             exit 1
           fi
+
           echo "path=$ZIP_PATH" >> "$GITHUB_OUTPUT"
-          echo "Building: $ZIP_PATH"
+          echo "Selected project: $ZIP_PATH"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -60,46 +67,61 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Extract project
+      - name: Prepare Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract and validate Android project
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/android-project"
           unzip -q "${{ steps.zip.outputs.path }}" -d "$RUNNER_TEMP/android-project"
+
           WRAPPER="$(find "$RUNNER_TEMP/android-project" -type f -name gradlew -print -quit)"
           if [[ -z "$WRAPPER" ]]; then
             echo "::error::ZIP must contain a complete Gradle project including gradlew and gradle/wrapper/."
             exit 1
           fi
+
           PROJECT_DIR="$(dirname "$WRAPPER")"
           if [[ ! -f "$PROJECT_DIR/settings.gradle" && ! -f "$PROJECT_DIR/settings.gradle.kts" ]]; then
             echo "::error::settings.gradle or settings.gradle.kts is missing beside gradlew."
             exit 1
           fi
+          if [[ ! -d "$PROJECT_DIR/gradle/wrapper" ]]; then
+            echo "::error::Gradle wrapper directory is missing."
+            exit 1
+          fi
+
           chmod +x "$WRAPPER"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-          echo "Project root: $PROJECT_DIR"
+          echo "Android project root: $PROJECT_DIR"
 
       - name: Build debug APK
-        uses: gradle/gradle-build-action@v3
-        with:
-          build-root-directory: ${{ env.PROJECT_DIR }}
-          arguments: assembleDebug --stacktrace
+        shell: bash
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Collect APK files
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/apk-output"
-          mapfile -t APK_FILES < <(find "$PROJECT_DIR" -type f -path '*/build/outputs/apk/debug/*.apk')
-          if [[ "${#APK_FILES[@]}" -eq 0 ]]; then
-            echo "::error::Build finished but no debug APK was found."
+          count=0
+
+          while IFS= read -r -d '' APK; do
+            relative="${APK#"$PROJECT_DIR"/}"
+            destination="$RUNNER_TEMP/apk-output/${relative//\//-}"
+            cp "$APK" "$destination"
+            count=$((count + 1))
+          done < <(find "$PROJECT_DIR" -type f -path '*/build/outputs/apk/debug/*.apk' -print0)
+
+          if [[ "$count" -eq 0 ]]; then
+            echo "::error::Build completed but no debug APK was found."
             exit 1
           fi
-          for APK in "${APK_FILES[@]}"; do
-            MODULE="$(basename "$(dirname "$(dirname "$(dirname "$APK")")")")"
-            cp "$APK" "$RUNNER_TEMP/apk-output/${MODULE}-$(basename "$APK")"
-          done
+
+          echo "Collected $count APK file(s):"
           ls -lh "$RUNNER_TEMP/apk-output"
 
       - name: Upload APK artifact
