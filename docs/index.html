@@ -140,12 +140,30 @@ drop.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();picker.cl
 ["dragenter","dragover"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add("over")}));
 ["dragleave","drop"].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove("over")}));
 drop.addEventListener("drop",e=>choose(e.dataTransfer.files[0]));picker.onchange=()=>choose(picker.files[0]);
-function choose(file){
+async function choose(file){
  if(!file)return;
- if(!file.name.toLowerCase().endsWith(".zip")){notice("Please choose a ZIP file.","error");return}
- if(file.size>50*1024*1024){notice("Maximum ZIP size is 50 MB.","error");return}
- selectedFile=file;$("fileMeta").textContent=file.name+" · "+(file.size/1048576).toFixed(2)+" MB";
- buildBtn.disabled=!connected; if(connected)notice("Ready to upload.","success");
+ selectedFile=null;buildBtn.disabled=true;
+ if(!file.name.toLowerCase().endsWith(".zip")){ $("fileMeta").textContent="Not a ZIP file";notice("Please choose a .zip archive.","error");return}
+ if(file.size>50*1024*1024){$("fileMeta").textContent="File is too large";notice("Maximum ZIP size is 50 MB.","error");return}
+ $("fileMeta").textContent="Checking archive…";
+ try{
+  const head=new Uint8Array(await file.slice(0,4).arrayBuffer());
+  const hasZipSignature=head[0]===0x50&&head[1]===0x4b&&
+    ((head[2]===0x03&&head[3]===0x04)||(head[2]===0x05&&head[3]===0x06)||(head[2]===0x07&&head[3]===0x08));
+  if(!hasZipSignature)throw new Error("This file is not a real ZIP archive. It appears to be an HTML page or another file renamed to .zip. Download the actual project ZIP from Gemini and try again.");
+  if(!window.JSZip)throw new Error("ZIP validator could not load. Refresh the page and try again.");
+  const zip=await JSZip.loadAsync(file);
+  const names=Object.keys(zip.files).filter(n=>!zip.files[n].dir).map(n=>n.replace(/\\\\/g,"/"));
+  const wrapper=names.find(n=>/(^|\\/)gradlew$/.test(n));
+  if(!wrapper)throw new Error("Valid ZIP, but it does not contain gradlew. Export the complete Android Studio/Gradle project, not a web preview or source-only folder.");
+  const root=wrapper.slice(0,wrapper.lastIndexOf("/")<0?0:wrapper.lastIndexOf("/")+1);
+  const hasSettings=names.includes(root+"settings.gradle")||names.includes(root+"settings.gradle.kts");
+  const hasWrapper=names.includes(root+"gradle/wrapper/gradle-wrapper.properties")&&names.includes(root+"gradle/wrapper/gradle-wrapper.jar");
+  const hasAppBuild=names.some(n=>n.startsWith(root)&&/(^|\\/)build.gradle(\\.kts)?$/.test(n));
+  if(!hasSettings||!hasWrapper||!hasAppBuild)throw new Error("ZIP is readable but is missing required Android Gradle project files. Include gradlew, settings.gradle(.kts), gradle/wrapper/gradle-wrapper.jar, gradle-wrapper.properties and module build.gradle(.kts).");
+  selectedFile=file;$("fileMeta").textContent="✓ "+file.name+" · "+(file.size/1048576).toFixed(2)+" MB · Android Gradle project verified";
+  buildBtn.disabled=!connected;notice("ZIP verified. Ready to upload and build.","success");
+ }catch(e){$("fileMeta").textContent="Archive validation failed";notice(e.message||"Could not read ZIP archive.","error");}
 }
 function uploadProgress(loaded,total){
  const pct=total?Math.min(100,Math.floor(loaded/total*100)):0;
