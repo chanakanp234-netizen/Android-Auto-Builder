@@ -15,7 +15,7 @@ on:
         default: 'input/project.zip'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: android-apk-${{ github.ref }}
@@ -164,3 +164,22 @@ jobs:
           path: ${{ runner.temp }}/apk-output/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish direct APK download
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="android-apk-build-${GITHUB_RUN_ID}"
+          TITLE="Android APK build #${GITHUB_RUN_NUMBER}"
+          NOTES="Debug APK built from commit ${GITHUB_SHA}. This release was generated automatically by Android Auto Builder."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$RUNNER_TEMP"/apk-output/*.apk --clobber
+          else
+            gh release create "$TAG" "$RUNNER_TEMP"/apk-output/*.apk \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes "$NOTES"
+          fi
+          echo "Direct APK release ready: $TAG"
