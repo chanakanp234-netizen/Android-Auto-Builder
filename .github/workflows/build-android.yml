@@ -6,6 +6,7 @@ on:
     paths:
       - 'input/**/*.zip'
       - 'input/*.zip'
+      - '.github/workflows/build-android.yml'
   workflow_dispatch:
     inputs:
       project_zip_path:
@@ -47,6 +48,9 @@ jobs:
             ZIP_PATH="$MANUAL_ZIP_PATH"
           else
             ZIP_PATH="$(git diff --name-only "$EVENT_BEFORE" "$EVENT_SHA" -- 'input/*.zip' 'input/**/*.zip' | head -n 1 || true)"
+            if [[ -z "$ZIP_PATH" ]]; then
+              ZIP_PATH="$(find input -maxdepth 2 -type f -name '*.zip' -printf '%T@ %p\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2- || true)"
+            fi
           fi
 
           if [[ -z "$ZIP_PATH" || ! -f "$ZIP_PATH" ]]; then
