@@ -1,3 +1,4 @@
+
 name: Build Android APK
 
 on:
@@ -19,13 +20,13 @@ permissions:
 
 concurrency:
   group: android-apk-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     name: Build Android project ZIP
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
 
     steps:
       - name: Check out repository history
@@ -85,40 +86,51 @@ jobs:
 
           python3 - <<'PY'
           import os, pathlib, stat, zipfile
+
           archive = os.environ["ZIP_PATH"]
           destination = pathlib.Path(os.environ["RUNNER_TEMP"]) / "android-project"
           max_total = 2 * 1024 * 1024 * 1024
           total = 0
+
           try:
               with zipfile.ZipFile(archive) as zf:
                   for info in zf.infolist():
                       name = info.filename
                       path = pathlib.PurePosixPath(name)
+
                       if path.is_absolute() or ".." in path.parts:
                           raise SystemExit(f"Unsafe ZIP entry path: {name}")
+
                       mode = info.external_attr >> 16
                       if stat.S_ISLNK(mode):
-                          raise SystemExit(f"Symlinks are not allowed in project ZIPs: {name}")
+                          raise SystemExit(f"Symlinks are not allowed: {name}")
+
                       total += info.file_size
                       if total > max_total:
                           raise SystemExit("ZIP expands beyond the 2 GiB safety limit.")
+
                   zf.extractall(destination)
+
           except zipfile.BadZipFile:
-              raise SystemExit("Invalid ZIP archive: the uploaded file is not a real ZIP. It may be an HTML page renamed with a .zip extension. Export/download the actual project archive.")
+              raise SystemExit("Invalid ZIP archive.")
+
           print(f"Extracted project to {destination}")
           PY
 
           WRAPPER="$(find "$RUNNER_TEMP/android-project" -type f -name gradlew -print -quit)"
+
           if [[ -z "$WRAPPER" ]]; then
-            echo "::error::ZIP must contain a complete Gradle project including gradlew and gradle/wrapper/."
+            echo "::error::Complete Gradle project with gradlew is missing."
             exit 1
           fi
 
           PROJECT_DIR="$(dirname "$WRAPPER")"
+
           if [[ ! -f "$PROJECT_DIR/settings.gradle" && ! -f "$PROJECT_DIR/settings.gradle.kts" ]]; then
-            echo "::error::settings.gradle or settings.gradle.kts is missing beside gradlew."
+            echo "::error::Gradle settings file is missing."
             exit 1
           fi
+
           if [[ ! -f "$PROJECT_DIR/gradle/wrapper/gradle-wrapper.properties" ]]; then
             echo "::error::Gradle wrapper properties are missing."
             exit 1
@@ -130,10 +142,15 @@ jobs:
 
       - name: Build debug APK
         shell: bash
+        timeout-minutes: 13
         run: |
           set -euo pipefail
           cd "$PROJECT_DIR"
-          ./gradlew assembleDebug --stacktrace
+
+          timeout --signal=TERM --kill-after=30s 12m \
+            ./gradlew --no-daemon assembleDebug --stacktrace --console=plain
+
+          echo "APK build command completed."
 
       - name: Collect APK files
         shell: bash
@@ -171,9 +188,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+
           TAG="android-apk-build-${GITHUB_RUN_ID}"
           TITLE="Android APK build #${GITHUB_RUN_NUMBER}"
-          NOTES="Debug APK built from commit ${GITHUB_SHA}. This release was generated automatically by Android Auto Builder."
+          NOTES="Debug APK built from commit ${GITHUB_SHA}."
+
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$RUNNER_TEMP"/apk-output/*.apk --clobber
           else
@@ -182,4 +201,5 @@ jobs:
               --title "$TITLE" \
               --notes "$NOTES"
           fi
+
           echo "Direct APK release ready: $TAG"
